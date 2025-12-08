@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+
+# Docker
+*.log
+*.tmp
+
+# IDEs
+.vscode/
+.idea/

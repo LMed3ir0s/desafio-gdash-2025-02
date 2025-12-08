@@ -1,0 +1,86 @@
+version: "3.9"
+
+networks:
+  gdash-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: etl_weather
+      RABBITMQ_DEFAULT_PASS: etl_weather_pass
+    networks:
+      - gdash-network
+
+  mongo:
+    image: mongo:6
+    container_name: gdash-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - gdash-network
+
+  api-backend:
+    build:
+      context: ./gdash-backend
+      dockerfile: Dockerfile
+    container_name: gdash-api
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./gdash-backend/.env
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - gdash-network
+
+  collector:
+    build:
+      context: ./collector-python
+      dockerfile: Dockerfile
+    container_name: gdash-collector
+    env_file:
+      - ./collector-python/.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - gdash-network
+
+  worker:
+    build:
+      context: ./worker-go
+      dockerfile: Dockerfile
+    container_name: gdash-worker
+    env_file:
+      - ./worker-go/.env
+    depends_on:
+      - rabbitmq
+      - api-backend
+    restart: on-failure
+    networks:
+      - gdash-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gdash-frontend
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-backend
+    networks:
+      - gdash-network
