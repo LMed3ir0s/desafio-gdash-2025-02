@@ -43,7 +43,7 @@ Export XLSX | http://localhost:3000/api/weather/export/xlsx
 ## 👤 Usuário padrão
 
 Email: admin@gdash.com  
-Senha: 12345678  
+Senha: 123456
 
 Permite acesso inicial ao sistema e testes de funcionalidades.
 
